@@ -34,25 +34,52 @@ def split_document(text, chunk_size=1000, overlap=150):
         start += chunk_size - overlap
     return chunks
 
-# Function to embed chunks with OpenAI
-def embed_with_openai(chunk):
+# Function to embed a list of text using OpenAI's GPT-3.5 capabilities
+def embed_text_list(chunks):
+    embeddings = []
+    for chunk in chunks:
+        try:
+            # Call the OpenAI API to embed each text separately
+            response = openai.Embed({
+                'text': chunk,
+                'model': 'text-davinci-003',  # You can change the model if needed
+            })
+            # Extract the embedding and append to the embeddings list
+            embeddings.append(response['embedding'])
+            docs.append(chunk.encode('utf-8'))
+        except Exception as e:
+            print(f"Error embedding text: {text}")
+            print(f"Error message: {e}")
+    return embeddings, docs
+
+
+
+# Function to save embeddings into a FAISS index
+def save_embeddings_to_faiss(embeddings, folder_path):
+    # Create the folder if it doesn't exist
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # Convert embeddings to numpy array
+    embeddings_np = np.array(embeddings).astype('float32')
+
+    # Instantiate a FAISS index
+    dimension = embeddings_np.shape[1]  # Dimensionality of embeddings
+    index = faiss.IndexFlatL2(dimension)  # L2 distance (Euclidean distance)
+
+    # Add embeddings to the index
+    index.add(embeddings_np)
+
+    # Save the index to disk
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=chunk,
-            max_tokens=50,
-            temperature=0,
-            top_p=1.0,
-            frequency_penalty=0.0,
-            presence_penalty=0.0,
-            stop=["\n"]
-        )
-    except openai.OpenAIError as e:
-        print(f"OpenAI API call failed: {e}")
-        return None
-        
-    embedding = np.array(response.choices[0].embedding)
-    return embedding
+        index_path = os.path.join(folder_path, 'embeddings.index')
+        faiss.write_index(index, index_path)
+        print(f"FAISS index saved successfully in folder: {folder_path}")
+    except Exception as e:
+        print(f"Error saving FAISS index: {e}")
+
+
+
 
 # Specify the folder containing PDF files
 folder_path = 'database'
@@ -79,26 +106,26 @@ for file_name in os.listdir("database"):
                     chunks = split_document(text)
 
                     # Embed each chunk with OpenAI and add to Faiss index
-                    for chunk in chunks:
-                        embedding = embed_with_openai(chunk)
-                        embeddings.append(embedding)
-                        docs.append(chunk.encode('utf-8'))
+                    embedding = embed_text_list(chunks)
+                    
+        
         except (IOError, FileNotFoundError) as e:
             print(f"Failed to open or read PDF file {file_path}: {e}")
             continue        
 
-# Convert lists to numpy arrays
-embeddings = np.array(embeddings)
-docs = np.array(docs)
 
-# Create directory if it doesn't exist
-vector_db_folder = 'vector_db'
-os.makedirs(vector_db_folder, exist_ok=True)
-
-# Save embeddings and docs to the folder
-np.save(os.path.join(vector_db_folder, 'embeddings.npy'), embeddings)
-np.save(os.path.join(vector_db_folder, 'docs.npy'), docs)
+# Define target folder name
+folder_path = 'vector_db'
 
 
-# Save the Faiss index
-faiss.write_index(index, os.path.join(vector_db_folder, "vector_db.index"))
+# Save embeddings to a FAISS index in the specified folder
+save_embeddings_to_faiss(embeddings, folder_path)
+
+
+
+
+#docs = np.array(docs)
+# # Save embeddings and docs to the folder
+# np.save(os.path.join(vector_db_folder, 'embeddings.npy'), embeddings)
+# np.save(os.path.join(vector_db_folder, 'docs.npy'), docs)
+
