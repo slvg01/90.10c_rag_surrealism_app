@@ -2,27 +2,30 @@
 import os
 import numpy as np
 from PyPDF2 import PdfReader
-import openai
 import streamlit as st
 import faiss
 #from langchain_community.vectorstores import FAISS
 # from langchain.text_splitter import RecursiveCharacterTextSplitter
-# from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 # import docx
 
 
 
 # Load generative key based on secrets file
 try:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    openai_api_key = st.secrets["OPENAI_API_KEY"]
 except KeyError:
     print("OPENAI_API_KEY not found in secrets.")
     exit(1)
 
+# Embedding Initialization 
+source_folder_path = 'database'
+embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small", dimensions=768)  
+embeddings = []
+docs = []
+land_folder_path = 'vector_db'  # folder to save the database
 
-# Initialize Faiss index
-dimension = 768  # Assuming OpenAI embeddings are 768-dimensional
-index = faiss.IndexFlatL2(dimension)  # L2 distance is suitable for cosine similarity
+
 
 # Function to split documents into chunks
 def split_document(text, chunk_size=1000, overlap=150):
@@ -34,24 +37,22 @@ def split_document(text, chunk_size=1000, overlap=150):
         start += chunk_size - overlap
     return chunks
 
+
 # Function to embed a list of text using OpenAI's GPT-3.5 capabilities
 def embed_text_list(chunks):
-    embeddings = []
-    for chunk in chunks:
-        try:
-            # Call the OpenAI API to embed each text separately
-            response = openai.Embed({
-                'text': chunk,
-                'model': 'text-davinci-003',  # You can change the model if needed
-            })
-            # Extract the embedding and append to the embeddings list
-            embeddings.append(response['embedding'])
+    try:
+    # Call the OpenAI API to embed each text separately
+        embs = embeddings_model.embed_documents(chunks)
+        for emb in embs:
+            embeddings.append(emb)  
+    # Extract the embedding and append to the embeddings list
+        for chunk in chunks:
             docs.append(chunk.encode('utf-8'))
-        except Exception as e:
-            print(f"Error embedding text: {text}")
-            print(f"Error message: {e}")
+    except Exception as e:
+        print(f"Error embedding text: {chunks}")
+        print(f"Error message: {e}")
     return embeddings, docs
-
+    
 
 
 # Function to save embeddings into a FAISS index
@@ -65,10 +66,13 @@ def save_embeddings_to_faiss(embeddings, folder_path):
 
     # Instantiate a FAISS index
     dimension = embeddings_np.shape[1]  # Dimensionality of embeddings
+    print(dimension)
     index = faiss.IndexFlatL2(dimension)  # L2 distance (Euclidean distance)
 
     # Add embeddings to the index
     index.add(embeddings_np)
+
+
 
     # Save the index to disk
     try:
@@ -77,21 +81,17 @@ def save_embeddings_to_faiss(embeddings, folder_path):
         print(f"FAISS index saved successfully in folder: {folder_path}")
     except Exception as e:
         print(f"Error saving FAISS index: {e}")
+    index_length = index.ntotal
+    print("Length of the FAISS index:", index_length)
+    return index
 
 
 
-
-# Specify the folder containing PDF files
-folder_path = 'database'
-
-# Initialize lists to store embeddings and corresponding documents
-embeddings = []
-docs = []
 
 # Iterate over each file in the folder
 for file_name in os.listdir("database"):
     if file_name.endswith('.pdf'):
-        file_path = os.path.join(folder_path, file_name)
+        file_path = os.path.join(source_folder_path, file_name)
         try:
             with open(file_path, 'rb') as pdf_file:
                 pdf_reader = PdfReader(pdf_file)
@@ -105,7 +105,7 @@ for file_name in os.listdir("database"):
                     # Split the page into chunks
                     chunks = split_document(text)
 
-                    # Embed each chunk with OpenAI and add to Faiss index
+                    # Embed each chunk with OpenAI 
                     embedding = embed_text_list(chunks)
                     
         
@@ -114,18 +114,15 @@ for file_name in os.listdir("database"):
             continue        
 
 
-# Define target folder name
-folder_path = 'vector_db'
+# Save embeddings to a FAISS index with the save_embeddings_to_faiss function
+save_embeddings_to_faiss(embeddings, land_folder_path)
 
 
-# Save embeddings to a FAISS index in the specified folder
-save_embeddings_to_faiss(embeddings, folder_path)
+# Save embeddings and docs to the folder
+docs = np.array(docs)
+np.save(os.path.join(land_folder_path, 'embeddings.npy'), embeddings)
+np.save(os.path.join(land_folder_path, 'docs.npy'), docs)
 
-
-
-
-#docs = np.array(docs)
-# # Save embeddings and docs to the folder
-# np.save(os.path.join(vector_db_folder, 'embeddings.npy'), embeddings)
-# np.save(os.path.join(vector_db_folder, 'docs.npy'), docs)
-
+print ("nb of embeddings:", len(embeddings))
+print ('embedding vector length :' , len(embeddings[18]), len(embeddings[50]))
+print (' nb of docs: ', len(docs))
