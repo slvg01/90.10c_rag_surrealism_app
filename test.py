@@ -1,63 +1,50 @@
-# load, split and vectorize a document using the langchain library (all in one) and make a query on doucment content
-from langchain_openai import OpenAIEmbeddings
-import streamlit as st
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAI
+#ingestion and vectorization of the content
 import os
+import numpy as np
+from PyPDF2 import PdfReader
+import streamlit as st
+import faiss
+from langchain_community.vectorstores import FAISS
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.document_loaders import DirectoryLoader,  PyPDFLoader
+# import docx
 
 
-openai_api_key = st.secrets["OPENAI_API_KEY"]
-embeddings_model = OpenAIEmbeddings(
-model="text-embedding-3-small", dimensions=128
-)
+
+# Load generative key based on secrets file
+try:
+    openai_api_key = st.secrets["OPENAI_API_KEY"]
+except KeyError:
+    print("OPENAI_API_KEY not found in secrets.")
+    exit(1)
+
+# Embedding Initialization 
+
+embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small", dimensions=1536)  
 embeddings = []
 docs = []
+source_folder_path = 'database'
+land_folder_path = 'vector_db'  # folder to save the database
+chunk_size = 1000
+chunk_overlap = 100
 
-def embed_text_list(chunks):
+
+loader = DirectoryLoader(source_folder_path, loader_cls = PyPDFLoader )
+pages = loader.load_and_split()
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\\n\\n\\n","\\n\\n","\\n","."])    
+chunks = text_splitter.split_documents(pages)
+
+
+if not os.path.exists(land_folder_path):
+    os.makedirs(land_folder_path)
+
+# Instantiate a FAISS index
+embeddings = embeddings_model
+index = FAISS.from_documents(chunks, embeddings)
+index.save_local(land_folder_path)
     
-    
-    try:
-    # Call the OpenAI API to embed each text separately
-        texts = [chunk.page_content for chunk in chunks]
-        embs = OpenAIEmbeddings(texts)
-        for emb in embs:
-            embeddings.append(emb)  
-    # Extract the embedding and append to the embeddings list
-        for chunk in chunks:
-            docs.append(chunk.encode('utf-8'))
-    except Exception as e:
-        print(f"Error embedding text: {chunks}")
-        print(f"Error message: {e}")
-    # print(len(embs), len(embs[3]))
-    # print(len(docs), docs)
-    return embeddings, docs
-    
-
-
-#load the document 
-def document_load_and_chunk (document):
-    loader = PyPDFLoader(document)
-    data = loader.load()
-    print(type(data[0]))
-    
-
-    chunk_size = 200
-    chunk_overlap = 50
-
-    # Split the pdf into chunk using RecursiveCharacterTextSplitter
-    splitter = RecursiveCharacterTextSplitter(
-    chunk_size=chunk_size, 
-    chunk_overlap=chunk_overlap, 
-    separators=['.']
-    )
-    chunks = splitter.split_documents(data)
-    return chunks
-   
-
-chunks = document_load_and_chunk('database/MANIFESTO_OF_SURREALISM.pdf')
-embed_text_list(chunks)
-
-
-
+            
+# query = 'the imbeciles'
+# docs = index.similarity_search(query, k=3)
+# print(docs)

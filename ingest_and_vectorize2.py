@@ -104,16 +104,16 @@ for file_name in os.listdir("database"):
 
 
 # Save embeddings to a FAISS index with the save_embeddings_to_faiss function
-# save_embeddings_to_faiss(embeddings, land_folder_path)
+save_embeddings_to_faiss(embeddings, land_folder_path)
 
 
 # Save embeddings and docs to the folder
-# docs = np.array(docs)
-# np.save(os.path.join(land_folder_path, 'embeddings.npy'), embeddings)
-# np.save(os.path.join(land_folder_path, 'docs.npy'), docs)
+docs = np.array(docs)
+np.save(os.path.join(land_folder_path, 'embeddings.npy'), embeddings)
+np.save(os.path.join(land_folder_path, 'docs.npy'), docs)
 
-print(type(chunks))
-print ("nb of chunks in chunks list", len(chunks))
+# print(type(chunks))
+# print ("nb of chunks in chunks list", len(chunks))
 # print ("nb of embeddings:", len(embeddings))
 # print ('embedding vector length :' , len(embeddings[18]), len(embeddings[50]))
 # print (' nb of docs: ', len(docs))
