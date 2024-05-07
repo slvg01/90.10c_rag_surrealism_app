@@ -26,22 +26,24 @@ def load_chain():
 
     # Load the local vector database as a retriever
     vector_store = FAISS.load_local("vector_db", embeddings, allow_dangerous_deserialization=True)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+    retriever = vector_store.as_retriever(search_kwargs={"k": 6})
 
     # Create a memory feature for the chat 
     memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history")
 
     # Create system prompt
     template = """
-    You are an AI assistant for answering questions about the Blendle Employee Handbook given to you.
+    You are an AI assistant for answering questions about the surrealism art base on the documents given to you.
     Below You are given contextual information and a question,  provide a conversational answer.
-    Do not build or make up an answer if you do not have supporting information
-    If you don't know the answer, just say 'i am very sorry, i do not know. Go to Museum lazy human'
-    If the question is not about art, politely inform them that you are tuned to only answer questions about art.
+    Only rely on the context to build the answer.
+    Do not build or make up an answer if you do not have supporting information in the context.
+    If you don't know the answer, just say 'i don't know, please go to museum.
+    If the question is not about the art, politely inform them that you are tuned to only answer questions about art.
 
+    
     {context}
-    Question: {question}
-    Answer:"""
+    Answer:
+    Question: {question}"""
 
     # Create the Conversational Chain
     chain = ConversationalRetrievalChain.from_llm(llm=llm,
@@ -54,5 +56,6 @@ def load_chain():
     # Can only add it at the end for ConversationalRetrievalChain
     QA_CHAIN_PROMPT = PromptTemplate(input_variables=["context", "question"], template=template)
     chain.combine_docs_chain.llm_chain.prompt.messages[0] = SystemMessagePromptTemplate(prompt=QA_CHAIN_PROMPT)
+
 
     return chain

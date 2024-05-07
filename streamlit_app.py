@@ -15,8 +15,8 @@ st.set_page_config(
 
 # put a title on the page and line return after
 st.markdown("""
-<h1 style="color: #fc6353;">Welcome to surrealism knowledge base</h1>
-<h1 style="color: #fc6353;">Art lovers get food here ❤</h1>
+<h1 style="color: pink;">Welcome to Surrealism space</h1>
+<h1 style="color: pink;">Free for Art lovers only ❤❤❤</h1>
 """, unsafe_allow_html=True)
 
 for _ in range(3):
