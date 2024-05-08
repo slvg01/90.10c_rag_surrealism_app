@@ -32,7 +32,7 @@ def add_bg_from_base64(base64_str):
          """, unsafe_allow_html=True)
 
 # Image path
-image_path = 'pics/background.jpg'
+image_path = 'pictures/background.jpg'
 
 # Convert image to base64
 base64_img = image_to_base64(image_path)
