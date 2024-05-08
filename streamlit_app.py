@@ -1,6 +1,7 @@
 import time
 import streamlit as st
 from chain import load_chain
+import base64
 
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 
@@ -13,10 +14,37 @@ st.set_page_config(
     page_icon=company_logo, 
 )
 
+
+# Function to convert image to base64
+def image_to_base64(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode("utf-8")
+
+# Function to add background image using base64
+def add_bg_from_base64(base64_str):
+    st.markdown(f"""
+         <style>
+         .stApp {{
+             background-image: url(data:image/jpg;base64,{base64_str});
+             background-size: cover;
+         }}
+         </style>
+         """, unsafe_allow_html=True)
+
+# Image path
+image_path = 'pics/background.jpg'
+
+# Convert image to base64
+base64_img = image_to_base64(image_path)
+
+# Set background image
+add_bg_from_base64(base64_img)
+
+
 # put a title on the page and line return after
 st.markdown("""
-<h1 style="color: pink;">Welcome to Surrealism space</h1>
-<h1 style="color: pink;">Free for Art lovers only ❤❤❤</h1>
+<h1 style="color: darblue;">........Surrealism Space</h1>
+<h1 style="color: darkblueblack;">Free for Art lovers only ❤❤❤</h1>
 """, unsafe_allow_html=True)
 
 for _ in range(3):
