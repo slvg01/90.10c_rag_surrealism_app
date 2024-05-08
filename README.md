@@ -5,14 +5,14 @@
 - create a online Retrieved Augmented Generation `RAG chat bot` app to answer questions regarding surrealism and especially belgium surrealism
 <p align="center"> GET IN AND TRY  :  </p>
     
-<p align="center"><a href="https://surrealism.streamlit.app/"><img src="pics/enter.png" height="50" /></a> </p>
+<p align="center"><a href="https://surrealism.streamlit.app/"><img src="pictures/enter.png" height="50" /></a> </p>
 
 - The corpus of document is a set of publically available pdf documents on surrealism. Please contact me to get them if interested. 
 
 - The LLM used in the backgroud to formulate the answer is openai 
 
 <p align="center">
-  <img src="pics/rag_scheme.png"  />
+  <img src="pictures/rag_scheme.png"  />
 </p>
 
 
