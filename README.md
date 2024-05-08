@@ -3,7 +3,7 @@
 
 ## 🎯 Objectives:
 - create a online Retrieved Augmented Generation `RAG chat bot` app to answer questions regarding surrealism and especially belgium surrealism:
-[GET IN AND TRY THE APP](https://surrealism.streamlit.app/)
+   [TRY THE APP !](https://surrealism.streamlit.app/)
     
 
 - The corpus of document is a set of publically available pdf documents on surrealism. Please contact me to get them if interested. 
