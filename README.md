@@ -3,7 +3,8 @@
 
 ## 🎯 Objectives:
 - create a online Retrieved Augmented Generation `RAG chat bot` app to answer questions regarding surrealism and especially belgium surrealism
-<p align="center"> GET IN AND TRY  :  </p>
+
+<p align="center"> [GET IN AND TRY](https://surrealism.streamlit.app/)  </p>
     
 <p align="center"><a href="https://surrealism.streamlit.app/"><img src="pictures/enter.png" height="50" /></a> </p>
 
