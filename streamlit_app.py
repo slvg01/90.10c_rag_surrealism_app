@@ -43,8 +43,8 @@ add_bg_from_base64(base64_img)
 
 # put a title on the page and line return after
 st.markdown("""
-<h1 style="color: darblue;">........Surrealism Space</h1>
-<h1 style="color: darkblueblack;">Free for Art lovers only ❤❤❤</h1>
+<h1 style="color: darkblue;">........Surrealism Space</h1>
+<h1 style="color: darkblue;">Free for Art lovers only ❤❤❤</h1>
 """, unsafe_allow_html=True)
 
 for _ in range(3):
