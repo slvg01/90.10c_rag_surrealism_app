@@ -67,22 +67,22 @@ if 'messages' not in st.session_state:
 for message in st.session_state.messages:
     if message["role"] == 'assistant':
         with st.chat_message(message["role"], avatar=company_logo):
-            st.markdown(message["content"])
+            st.markdown(f"**{message['content']}**")
     else:
         with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+            st.markdown(message['content'])
 
 
 # Chat logical sequence
 #add a base invite message in the chat box 
-if query := st.chat_input("Ask me anything"):
+if query := st.chat_input('Ask me anything'):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": query})
-    # Display user message in chat message container
+    # Display user message in chat message containers
     with st.chat_message("user"):
         st.markdown(query)
 
-    with st.chat_message("assistant",avatar=company_logo):
+    with st.chat_message("assistant", avatar=company_logo):
         message_placeholder = st.empty()
         # Send user's question to the chain
         result = chain.invoke({"question": query})
@@ -91,10 +91,10 @@ if query := st.chat_input("Ask me anything"):
 
         # Simulate stream of response with milliseconds delay
         for chunk in response.split():
-            full_response += chunk + " "
-            time.sleep(0.12)
+            full_response += f"**{chunk}**" + " "
+            time.sleep(0.08)
             # Add a blinking cursor to simulate typing
-            message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response +"|")
         message_placeholder.markdown(full_response)
 
     # Add assistant message to chat history
