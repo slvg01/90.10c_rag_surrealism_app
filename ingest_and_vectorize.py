@@ -19,13 +19,13 @@ except KeyError:
 
 #Embedding Initialization 
 
-embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small", dimensions=1536)  
+embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large", dimensions=3072)  
 embeddings = []
 docs = []
 source_folder_path = 'database'
 land_folder_path = 'vector_db'  # folder to save the database
-chunk_size = 300
-chunk_overlap = 100
+chunk_size = 750
+chunk_overlap = 150
 
 
 
