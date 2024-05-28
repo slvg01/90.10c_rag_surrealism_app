@@ -36,7 +36,7 @@ To install the app scripts , follow these steps:
 
 
 ## 👟 Running
-- you may just try to press the `Enter` button above and try the app online, 
+- you may just click the `TRY THE APP` link in the above Objectives pragraph to try the app online,
 
 - Or if you are trying to duplicate or create your own app based on your own set of pdf : 
     - once the above installation is done and your ppdf are in the databse folder, then run the ingest_and_vectorized.py script to create the database index
