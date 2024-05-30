@@ -6,12 +6,12 @@ import base64
 openai_api_key = st.secrets["OPENAI_API_KEY"]
 
 # Custom image for the app icon and the assistant's avatar
-company_logo = 'https://www.app.nl/wp-content/uploads/2019/01/Blendle.png'
+company_logo = "https://www.app.nl/wp-content/uploads/2019/01/Blendle.png"
 
 # Configure streamlit page
 st.set_page_config(
     page_title="Your Surrealism Chatbot",
-    page_icon=company_logo, 
+    page_icon=company_logo,
 )
 
 
@@ -20,19 +20,24 @@ def image_to_base64(image_path):
     with open(image_path, "rb") as img_file:
         return base64.b64encode(img_file.read()).decode("utf-8")
 
+
 # Function to add background image using base64
 def add_bg_from_base64(base64_str):
-    st.markdown(f"""
+    st.markdown(
+        f"""
          <style>
          .stApp {{
              background-image: url(data:image/jpg;base64,{base64_str});
              background-size: cover;
          }}
          </style>
-         """, unsafe_allow_html=True)
+         """,
+        unsafe_allow_html=True,
+    )
+
 
 # Image path
-image_path = 'pictures/background.jpg'
+image_path = "pictures/background.jpg"
 
 # Convert image to base64
 base64_img = image_to_base64(image_path)
@@ -42,43 +47,51 @@ add_bg_from_base64(base64_img)
 
 
 # put a title on the page and line return after
-st.markdown("""
+st.markdown(
+    """
 <h1 style="color: darkblue;">........Surrealism Space</h1>
-<h1 style="color: darkblue;">Free for Art lovers only ❤❤❤</h1>
-""", unsafe_allow_html=True)
+<h1 style="color: darkblue;">Free for Art Lovers only ❤❤❤</h1>
+""",
+    unsafe_allow_html=True,
+)
 
 for _ in range(3):
-   st.markdown("""
+    st.markdown("""
     """)
-   
-   
+
+
 # Initialize LLM chain
 chain = load_chain()
 
 
 # Initialize chat history
-if 'messages' not in st.session_state:
+if "messages" not in st.session_state:
     # Start with first message from assistant
-    st.session_state['messages'] = [{"role": "assistant",
-                                  "content": "Hi, I am a surreal AI. Ask me anything about surrealism art. 🎨"}]
+    st.session_state["messages"] = [
+        {
+            "role": "assistant",
+            "content": "Hi, I am a surreal AI. Ask me anything about surrealism art. 🎨",
+        }
+    ]
 
 
 # Display chat messages from history on app rerun and put a custom avatar for the assistant, default avatar for user
 for message in st.session_state.messages:
-    if message["role"] == 'assistant':
+    if message["role"] == "assistant":
         with st.chat_message(message["role"], avatar=company_logo):
             st.markdown(f"**{message['content']}**")
     else:
         with st.chat_message(message["role"]):
-            st.markdown(message['content'])
+            st.markdown(message["content"])
 
 
 # Chat logical sequence
-#add a base invite message in the chat box 
-if query := st.chat_input('Ask me anything'):
+# add a base invite message in the chat box
+if query := st.chat_input("Ask me anything"):
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": query})
-    # Display user message in chat message containers
+
+    # Display user message in chat message container
     with st.chat_message("user"):
         st.markdown(query)
 
@@ -86,16 +99,14 @@ if query := st.chat_input('Ask me anything'):
         message_placeholder = st.empty()
         # Send user's question to the chain
         result = chain.invoke({"question": query})
-        response = result['answer']
-        full_response = ""
+        response = result["answer"].strip()
+        
 
-        # Simulate stream of response with milliseconds delay
+        full_response = ""
         for chunk in response.split():
             full_response += f"**{chunk}**" + " "
-            time.sleep(0.08)
+            time.sleep(0.05)
             # Add a blinking cursor to simulate typing
-            message_placeholder.markdown(full_response +"|")
+            message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
-
-    # Add assistant message to chat history
-    st.session_state.messages.append({"role": "assistant", "content": response})
+        st.session_state.messages.append({"role": "assistant", "content": response})
